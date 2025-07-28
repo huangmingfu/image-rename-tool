@@ -45,7 +45,7 @@
 ### 环境要求
 
 - Node.js 18+
-- npm 或 yarn
+- npm 或 yarn 或 pnpm
 - Windows 10+, macOS 10.15+, 或 Linux
 
 ### 安装依赖
@@ -53,7 +53,6 @@
 ```bash
 # 克隆项目
 git clone <repository-url>
-cd vutron
 
 # 安装依赖
 npm install
