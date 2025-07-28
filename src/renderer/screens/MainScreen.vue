@@ -6,7 +6,9 @@ import {
   getFilesInFolder,
   translateToEnglish,
   applyNamingConvention,
-  renameFiles
+  renameFiles,
+  getTranslationConfig,
+  saveTranslationConfig
 } from '@/renderer/utils'
 import { onMounted, ref, computed, nextTick } from 'vue'
 import {
@@ -69,6 +71,21 @@ const errorMessage = ref('')
 const namingConvention = ref('camelCase')
 const autoCreateFolders = ref(true)
 
+// 翻译设置
+const translationMode = ref('pinyin') // 'pinyin', 'dictionary', 'baidu', 'youdao'
+const translationConfig = ref({
+  mode: 'pinyin',
+  baiduConfig: {
+    appId: '',
+    secretKey: ''
+  },
+  youdaoConfig: {
+    appKey: '',
+    appSecret: ''
+  }
+})
+const showTranslationConfigDialog = ref(false)
+
 // 命名规则选项
 const namingOptions = computed(() => [
   { value: 'camelCase', title: t('naming.camelCase') },
@@ -78,11 +95,20 @@ const namingOptions = computed(() => [
   { value: 'lowercase', title: t('naming.lowercase') }
 ])
 
+// 翻译模式选项
+const translationModeOptions = computed(() => [
+  { value: 'pinyin', title: t('translation.mode.pinyin') },
+  { value: 'dictionary', title: t('translation.mode.dictionary') },
+  { value: 'baidu', title: t('translation.mode.baidu') },
+  { value: 'youdao', title: t('translation.mode.youdao') }
+])
+
 // 重命名预览
 const renamePreview = ref<RenamePreviewItem[]>([])
 
 onMounted((): void => {
   getApplicationVersionFromMainProcess()
+  loadTranslationConfig()
 })
 
 const getApplicationVersionFromMainProcess = (): void => {
@@ -97,6 +123,51 @@ const handleChangeTheme = (): void => {
 
 const handleChangeLanguage = (val): void => {
   locale.value = val
+}
+
+// 翻译配置管理
+const loadTranslationConfig = async (): Promise<void> => {
+  try {
+    const config = await getTranslationConfig()
+    translationConfig.value = config
+    translationMode.value = config.mode
+  } catch (error) {
+    console.error('Error loading translation config:', error)
+  }
+}
+
+const saveTranslationConfiguration = async (): Promise<void> => {
+  try {
+    const configToSave = {
+      mode: translationMode.value,
+      baiduConfig: {
+        appId: translationConfig.value.baiduConfig.appId,
+        secretKey: translationConfig.value.baiduConfig.secretKey
+      },
+      youdaoConfig: {
+        appKey: translationConfig.value.youdaoConfig.appKey,
+        appSecret: translationConfig.value.youdaoConfig.appSecret
+      }
+    }
+
+    const result = await saveTranslationConfig(configToSave)
+    if (result.success) {
+      showTranslationConfigDialog.value = false
+      translationConfig.value = configToSave
+      // 重新生成预览
+      if (imageFiles.value.length > 0) {
+        await generatePreview()
+      }
+    } else {
+      console.error('Failed to save translation config:', result.error)
+    }
+  } catch (error) {
+    console.error('Error saving translation config:', error)
+  }
+}
+
+const openTranslationConfigDialog = (): void => {
+  showTranslationConfigDialog.value = true
 }
 
 // 选择文件夹
@@ -154,8 +225,34 @@ const generatePreview = async (): Promise<void> => {
         fileName.lastIndexOf('.')
       )
 
-      // 翻译中文文件名
-      const translatedName = await translateToEnglish(fileNameWithoutExt)
+      // 根据翻译模式翻译中文文件名
+      let translatedName = ''
+      try {
+        if (
+          translationMode.value === 'baidu' ||
+          translationMode.value === 'youdao'
+        ) {
+          // 使用在线翻译API
+          translatedName = await translateToEnglish(
+            fileNameWithoutExt,
+            translationMode.value,
+            translationConfig.value
+          )
+        } else {
+          // 使用本地翻译（拼音或词典）
+          translatedName = await translateToEnglish(
+            fileNameWithoutExt,
+            translationMode.value
+          )
+        }
+      } catch (error) {
+        console.error(
+          `Translation failed with ${translationMode.value}, falling back to pinyin:`,
+          error
+        )
+        // 翻译失败时回退到拼音
+        translatedName = await translateToEnglish(fileNameWithoutExt, 'pinyin')
+      }
 
       // 应用命名规则
       const formattedName = await applyNamingConvention(
@@ -363,6 +460,49 @@ const hasPreview = computed(() => renamePreview.value.length > 0)
                 </v-tooltip>
               </v-btn>
             </div>
+          </v-col>
+        </v-row>
+
+        <!-- 翻译设置行 -->
+        <v-row class="mt-4">
+          <v-col
+            cols="12"
+            md="6"
+          >
+            <v-select
+              v-model="translationMode"
+              :label="t('translation.mode.label')"
+              :items="translationModeOptions"
+              item-title="title"
+              item-value="value"
+              variant="outlined"
+              density="comfortable"
+              @update:model-value="refreshPreview"
+            >
+              <template #prepend-inner>
+                <v-icon :icon="mdiCamera" />
+              </template>
+            </v-select>
+          </v-col>
+          <v-col
+            cols="12"
+            md="6"
+          >
+            <v-btn
+              color="primary"
+              variant="outlined"
+              @click="openTranslationConfigDialog"
+              :disabled="
+                translationMode === 'pinyin' || translationMode === 'dictionary'
+              "
+              class="mt-2"
+            >
+              <v-icon
+                :icon="mdiCog"
+                class="mr-2"
+              />
+              {{ t('translation.config.button') }}
+            </v-btn>
           </v-col>
         </v-row>
       </v-card-text>
@@ -625,6 +765,225 @@ const hasPreview = computed(() => renamePreview.value.length > 0)
             @click="showErrorDialog = false"
           >
             确定
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- 翻译配置对话框 -->
+    <v-dialog
+      v-model="showTranslationConfigDialog"
+      max-width="600"
+    >
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon
+            :icon="mdiCamera"
+            color="primary"
+            class="mr-2"
+          />
+          {{ t('translation.config.title') }}
+        </v-card-title>
+        <v-card-text>
+          <v-row>
+            <v-col cols="12">
+              <v-select
+                v-model="translationMode"
+                :label="t('translation.mode.label')"
+                :items="translationModeOptions"
+                item-title="title"
+                item-value="value"
+                variant="outlined"
+                density="comfortable"
+              />
+            </v-col>
+          </v-row>
+
+          <!-- 百度翻译配置 -->
+          <v-row v-if="translationMode === 'baidu'">
+            <v-col cols="12">
+              <v-text-field
+                v-model="translationConfig.baiduConfig.appId"
+                :label="t('translation.config.baidu.appId')"
+                variant="outlined"
+                density="comfortable"
+                :hint="t('translation.config.baidu.appIdHint')"
+                persistent-hint
+              />
+            </v-col>
+            <v-col cols="12">
+              <v-text-field
+                v-model="translationConfig.baiduConfig.secretKey"
+                :label="t('translation.config.baidu.secretKey')"
+                type="password"
+                variant="outlined"
+                density="comfortable"
+                :hint="t('translation.config.baidu.secretKeyHint')"
+                persistent-hint
+              />
+            </v-col>
+          </v-row>
+
+          <!-- 有道翻译配置 -->
+          <v-row v-if="translationMode === 'youdao'">
+            <v-col cols="12">
+              <v-text-field
+                v-model="translationConfig.youdaoConfig.appKey"
+                :label="t('translation.config.youdao.appKey')"
+                variant="outlined"
+                density="comfortable"
+                :hint="t('translation.config.youdao.appKeyHint')"
+                persistent-hint
+              />
+            </v-col>
+            <v-col cols="12">
+              <v-text-field
+                v-model="translationConfig.youdaoConfig.appSecret"
+                :label="t('translation.config.youdao.appSecret')"
+                type="password"
+                variant="outlined"
+                density="comfortable"
+                :hint="t('translation.config.youdao.appSecretHint')"
+                persistent-hint
+              />
+            </v-col>
+          </v-row>
+
+          <!-- 本地模式说明 -->
+          <v-row v-if="translationMode === 'dictionary'">
+            <v-col cols="12">
+              <v-alert
+                type="info"
+                variant="tonal"
+              >
+                {{ t('translation.config.dictionary.description') }}
+              </v-alert>
+            </v-col>
+          </v-row>
+
+          <v-row v-if="translationMode === 'pinyin'">
+            <v-col cols="12">
+              <v-alert
+                type="info"
+                variant="tonal"
+              >
+                {{ t('translation.config.pinyin.description') }}
+              </v-alert>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="grey"
+            variant="text"
+            @click="showTranslationConfigDialog = false"
+          >
+            {{ t('common.cancel') }}
+          </v-btn>
+          <v-btn
+            color="primary"
+            @click="saveTranslationConfiguration"
+          >
+            {{ t('common.save') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- 翻译配置对话框 -->
+    <v-dialog
+      v-model="showTranslationConfigDialog"
+      max-width="600"
+    >
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon
+            :icon="mdiCamera"
+            color="primary"
+            class="mr-2"
+          />
+          {{ t('translation.config.title') }}
+        </v-card-title>
+        <v-card-text>
+          <v-row>
+            <v-col cols="12">
+              <v-select
+                v-model="translationMode"
+                :label="t('translation.mode.label')"
+                :items="translationModeOptions"
+                item-title="title"
+                item-value="value"
+                variant="outlined"
+                density="comfortable"
+              />
+            </v-col>
+          </v-row>
+
+          <!-- 百度翻译配置 -->
+          <v-row v-if="translationMode === 'baidu'">
+            <v-col cols="12">
+              <v-text-field
+                v-model="translationConfig.baiduConfig.appId"
+                :label="t('translation.config.baidu.appId')"
+                variant="outlined"
+                density="comfortable"
+                :hint="t('translation.config.baidu.appIdHint')"
+                persistent-hint
+              />
+            </v-col>
+            <v-col cols="12">
+              <v-text-field
+                v-model="translationConfig.baiduConfig.secretKey"
+                :label="t('translation.config.baidu.secretKey')"
+                type="password"
+                variant="outlined"
+                density="comfortable"
+                :hint="t('translation.config.baidu.secretKeyHint')"
+                persistent-hint
+              />
+            </v-col>
+          </v-row>
+
+          <!-- 有道翻译配置 -->
+          <v-row v-if="translationMode === 'youdao'">
+            <v-col cols="12">
+              <v-text-field
+                v-model="translationConfig.youdaoConfig.appKey"
+                :label="t('translation.config.youdao.appKey')"
+                variant="outlined"
+                density="comfortable"
+                :hint="t('translation.config.youdao.appKeyHint')"
+                persistent-hint
+              />
+            </v-col>
+            <v-col cols="12">
+              <v-text-field
+                v-model="translationConfig.youdaoConfig.appSecret"
+                :label="t('translation.config.youdao.appSecret')"
+                type="password"
+                variant="outlined"
+                density="comfortable"
+                :hint="t('translation.config.youdao.appSecretHint')"
+                persistent-hint
+              />
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="grey"
+            variant="text"
+            @click="showTranslationConfigDialog = false"
+          >
+            {{ t('common.cancel') }}
+          </v-btn>
+          <v-btn
+            color="primary"
+            @click="saveTranslationConfiguration"
+          >
+            {{ t('common.save') }}
           </v-btn>
         </v-card-actions>
       </v-card>

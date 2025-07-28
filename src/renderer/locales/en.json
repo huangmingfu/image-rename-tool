@@ -53,5 +53,41 @@
   "empty": {
     "title": "Select Image Folder to Start",
     "description": "Please select a folder containing images, the tool will automatically scan and generate rename preview"
+  },
+  "translation": {
+    "mode": {
+      "label": "Translation Mode",
+      "pinyin": "Pinyin Conversion (Default)",
+      "dictionary": "Local Dictionary Translation",
+      "baidu": "Baidu Translate API",
+      "youdao": "Youdao Translate API"
+    },
+    "config": {
+      "title": "Translation Configuration",
+      "button": "Configure Translation",
+      "baidu": {
+        "appId": "Baidu Translate APP ID",
+        "appIdHint": "Enter your Baidu Translate API APP ID",
+        "secretKey": "Baidu Translate Secret Key",
+        "secretKeyHint": "Enter your Baidu Translate API secret key"
+      },
+      "youdao": {
+        "appKey": "Youdao Translate App Key",
+        "appKeyHint": "Enter your Youdao Translate API app key",
+        "appSecret": "Youdao Translate App Secret",
+        "appSecretHint": "Enter your Youdao Translate API app secret"
+      },
+      "dictionary": {
+        "description": "Use built-in Chinese-English dictionary for translation. Supports accurate translation of common vocabulary without internet connection."
+      },
+      "pinyin": {
+        "description": "Convert Chinese characters to Pinyin. Works for all Chinese characters without internet connection."
+      }
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
   }
 }

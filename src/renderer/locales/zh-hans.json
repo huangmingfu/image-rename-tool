@@ -53,5 +53,72 @@
   "empty": {
     "title": "选择图片文件夹开始",
     "description": "请选择包含图片的文件夹，工具将自动扫描并生成重命名预览"
+  },
+  "translation": {
+    "mode": {
+      "label": "翻译模式",
+      "pinyin": "拼音转换 (默认)",
+      "dictionary": "本地词典翻译",
+      "baidu": "百度翻译API",
+      "youdao": "有道翻译API"
+    },
+    "config": {
+      "title": "翻译配置",
+      "button": "配置翻译",
+      "baidu": {
+        "appId": "百度翻译APP ID",
+        "appIdHint": "请输入百度翻译API的APP ID",
+        "secretKey": "百度翻译密钥",
+        "secretKeyHint": "请输入百度翻译API的密钥"
+      },
+      "youdao": {
+        "appKey": "有道翻译应用ID",
+        "appKeyHint": "请输入有道翻译API的应用ID",
+        "appSecret": "有道翻译应用密钥",
+        "appSecretHint": "请输入有道翻译API的应用密钥"
+      },
+      "dictionary": {
+        "description": "使用内置中英文词典进行翻译，支持常用词汇的准确翻译。如果词典中没有对应词汇，将回退到拼音转换。"
+      },
+      "pinyin": {
+        "description": "将中文转换为拼音，这是默认模式，无需配置，适用于所有中文文本。"
+      }
+    }
+  },
+  "translation": {
+    "mode": {
+      "label": "翻译模式",
+      "pinyin": "拼音转换 (默认)",
+      "dictionary": "本地词典翻译",
+      "baidu": "百度翻译API",
+      "youdao": "有道翻译API"
+    },
+    "config": {
+      "title": "翻译配置",
+      "button": "配置翻译",
+      "baidu": {
+        "appId": "百度翻译APP ID",
+        "appIdHint": "请输入百度翻译API的APP ID",
+        "secretKey": "百度翻译密钥",
+        "secretKeyHint": "请输入百度翻译API的密钥"
+      },
+      "youdao": {
+        "appKey": "有道翻译应用ID",
+        "appKeyHint": "请输入有道翻译API的应用ID",
+        "appSecret": "有道翻译应用密钥",
+        "appSecretHint": "请输入有道翻译API的应用密钥"
+      },
+      "dictionary": {
+        "description": "使用内置中英文词典进行翻译，支持常用词汇的准确翻译，无需网络连接。"
+      },
+      "pinyin": {
+        "description": "将中文转换为拼音，适用于所有中文字符，无需网络连接。"
+      }
+    }
+  },
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "confirm": "确认"
   }
 }

@@ -14,7 +14,9 @@ const mainAvailChannels: string[] = [
   'msgGetFilesInFolder',
   'msgTranslateToEnglish',
   'msgApplyNamingConvention',
-  'msgRenameFiles'
+  'msgRenameFiles',
+  'msgGetTranslationConfig',
+  'msgSaveTranslationConfig'
 ]
 const rendererAvailChannels: string[] = []
 

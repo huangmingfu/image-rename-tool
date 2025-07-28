@@ -18,8 +18,17 @@ export async function getFilesInFolder(folderPath: string): Promise<any> {
   return window.mainApi.invoke('msgGetFilesInFolder', folderPath)
 }
 
-export async function translateToEnglish(chineseText: string): Promise<string> {
-  return window.mainApi.invoke('msgTranslateToEnglish', chineseText)
+export async function translateToEnglish(
+  chineseText: string,
+  mode: string = 'pinyin',
+  config?: any
+): Promise<string> {
+  return window.mainApi.invoke(
+    'msgTranslateToEnglish',
+    chineseText,
+    mode,
+    config
+  )
 }
 
 export async function applyNamingConvention(
@@ -33,4 +42,13 @@ export async function renameFiles(
   renameOperations: Array<{ oldPath: string; newPath: string }>
 ): Promise<any> {
   return window.mainApi.invoke('msgRenameFiles', renameOperations)
+}
+
+// Translation Configuration Management
+export async function getTranslationConfig(): Promise<any> {
+  return window.mainApi.invoke('msgGetTranslationConfig')
+}
+
+export async function saveTranslationConfig(config: any): Promise<any> {
+  return window.mainApi.invoke('msgSaveTranslationConfig', config)
 }
