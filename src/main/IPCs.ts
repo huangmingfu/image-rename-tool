@@ -6,128 +6,9 @@ import { transliterate } from 'transliteration'
 import Constants from './utils/Constants'
 import axios from 'axios'
 import * as crypto from 'crypto'
+import { chineseEnglishDictionary } from './utils/ChineseEnglishDictionary'
 
-// 常用中英文词典映射
-const commonChineseToEnglish: { [key: string]: string } = {
-  // 人物
-  人: 'person',
-  男人: 'man',
-  女人: 'woman',
-  孩子: 'child',
-  婴儿: 'baby',
-  老人: 'elderly',
-  朋友: 'friend',
-  家人: 'family',
-  父亲: 'father',
-  母亲: 'mother',
-
-  // 动物
-  猫: 'cat',
-  狗: 'dog',
-  鸟: 'bird',
-  鱼: 'fish',
-  马: 'horse',
-  牛: 'cow',
-  羊: 'sheep',
-  猪: 'pig',
-  鸡: 'chicken',
-  鸭: 'duck',
-
-  // 自然
-  山: 'mountain',
-  海: 'sea',
-  河: 'river',
-  湖: 'lake',
-  树: 'tree',
-  花: 'flower',
-  草: 'grass',
-  天空: 'sky',
-  云: 'cloud',
-  太阳: 'sun',
-  月亮: 'moon',
-  星星: 'star',
-  雨: 'rain',
-  雪: 'snow',
-
-  // 建筑
-  房子: 'house',
-  建筑: 'building',
-  桥: 'bridge',
-  路: 'road',
-  街道: 'street',
-  公园: 'park',
-  学校: 'school',
-  医院: 'hospital',
-  商店: 'shop',
-  餐厅: 'restaurant',
-
-  // 交通
-  汽车: 'car',
-  自行车: 'bicycle',
-  摩托车: 'motorcycle',
-  公交车: 'bus',
-  火车: 'train',
-  飞机: 'airplane',
-  船: 'boat',
-  地铁: 'subway',
-
-  // 食物
-  食物: 'food',
-  水果: 'fruit',
-  蔬菜: 'vegetable',
-  肉: 'meat',
-  海鲜: 'seafood',
-  米饭: 'rice',
-  面条: 'noodles',
-  面包: 'bread',
-  蛋糕: 'cake',
-  水: 'water',
-
-  // 颜色
-  红色: 'red',
-  蓝色: 'blue',
-  绿色: 'green',
-  黄色: 'yellow',
-  黑色: 'black',
-  白色: 'white',
-  紫色: 'purple',
-  橙色: 'orange',
-  粉色: 'pink',
-  灰色: 'gray',
-
-  // 时间
-  早上: 'morning',
-  中午: 'noon',
-  下午: 'afternoon',
-  晚上: 'evening',
-  夜晚: 'night',
-  春天: 'spring',
-  夏天: 'summer',
-  秋天: 'autumn',
-  冬天: 'winter',
-
-  // 常用形容词
-  大: 'big',
-  小: 'small',
-  高: 'tall',
-  矮: 'short',
-  长: 'long',
-  美丽: 'beautiful',
-  漂亮: 'pretty',
-  可爱: 'cute',
-  帅: 'handsome',
-
-  // 活动
-  运动: 'sport',
-  游戏: 'game',
-  音乐: 'music',
-  舞蹈: 'dance',
-  绘画: 'painting',
-  阅读: 'reading',
-  写作: 'writing',
-  旅行: 'travel',
-  购物: 'shopping'
-}
+// 使用外部词典文件
 
 // 百度翻译API
 async function translateWithBaidu(
@@ -217,8 +98,8 @@ async function translateWithYoudao(
 // 本地词典翻译
 function translateWithLocalDict(text: string): string {
   // 先尝试完整匹配
-  if (commonChineseToEnglish[text]) {
-    return commonChineseToEnglish[text]
+  if (chineseEnglishDictionary[text]) {
+    return chineseEnglishDictionary[text]
   }
 
   // 分词匹配
@@ -226,8 +107,8 @@ function translateWithLocalDict(text: string): string {
   for (let i = 0; i < text.length; i++) {
     for (let j = text.length; j > i; j--) {
       const substring = text.substring(i, j)
-      if (commonChineseToEnglish[substring]) {
-        words.push(commonChineseToEnglish[substring])
+      if (chineseEnglishDictionary[substring]) {
+        words.push(chineseEnglishDictionary[substring])
         i = j - 1
         break
       }
