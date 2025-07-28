@@ -10,6 +10,16 @@ import { chineseEnglishDictionary } from './utils/ChineseEnglishDictionary'
 
 // 使用外部词典文件
 
+// 去除文件名中的数字
+function removeNumbersFromText(text: string): string {
+  // 去除所有数字和常见的数字分隔符
+  return text
+    .replace(/\d+/g, '') // 去除数字
+    .replace(/[-_\s]+/g, ' ') // 将连字符、下划线、空格统一为空格
+    .replace(/\s+/g, ' ') // 合并多个空格为一个
+    .trim() // 去除首尾空格
+}
+
 // 百度翻译API
 async function translateWithBaidu(
   text: string,
@@ -222,15 +232,25 @@ export default class IPCs {
         config?: any
       ) => {
         try {
+          // 根据配置决定是否去除数字
+          let textToTranslate = chineseText
+          if (config && config.removeNumbers) {
+            textToTranslate = removeNumbersFromText(chineseText)
+            // 如果去除数字后文本为空，则使用原文本
+            if (!textToTranslate.trim()) {
+              textToTranslate = chineseText
+            }
+          }
+
           switch (mode) {
             case 'dictionary':
               // 本地词典翻译
-              const dictResult = translateWithLocalDict(chineseText)
+              const dictResult = translateWithLocalDict(textToTranslate)
               if (dictResult) {
                 return dictResult
               }
               // 如果词典没有找到，回退到拼音
-              return pinyin(chineseText, {
+              return pinyin(textToTranslate, {
                 style: pinyin.STYLE_NORMAL,
                 heteronym: false,
                 segment: true
@@ -248,7 +268,7 @@ export default class IPCs {
               ) {
                 try {
                   return await translateWithBaidu(
-                    chineseText,
+                    textToTranslate,
                     config.baiduConfig.appId,
                     config.baiduConfig.secretKey
                   )
@@ -257,7 +277,7 @@ export default class IPCs {
                     'Baidu translation failed, falling back to pinyin:',
                     error
                   )
-                  return pinyin(chineseText, {
+                  return pinyin(textToTranslate, {
                     style: pinyin.STYLE_NORMAL,
                     heteronym: false,
                     segment: true
@@ -278,7 +298,7 @@ export default class IPCs {
               ) {
                 try {
                   return await translateWithYoudao(
-                    chineseText,
+                    textToTranslate,
                     config.youdaoConfig.appKey,
                     config.youdaoConfig.appSecret
                   )
@@ -287,7 +307,7 @@ export default class IPCs {
                     'Youdao translation failed, falling back to pinyin:',
                     error
                   )
-                  return pinyin(chineseText, {
+                  return pinyin(textToTranslate, {
                     style: pinyin.STYLE_NORMAL,
                     heteronym: false,
                     segment: true
@@ -301,7 +321,7 @@ export default class IPCs {
             case 'pinyin':
             default:
               // 拼音转换（默认）
-              const pinyinResult = pinyin(chineseText, {
+              const pinyinResult = pinyin(textToTranslate, {
                 style: pinyin.STYLE_NORMAL,
                 heteronym: false,
                 segment: true
@@ -310,15 +330,24 @@ export default class IPCs {
                 .join('')
 
               // 使用transliteration作为备选
-              const transliteratedResult = transliterate(chineseText)
+              const transliteratedResult = transliterate(textToTranslate)
 
-              return pinyinResult || transliteratedResult || chineseText
+              return pinyinResult || transliteratedResult || textToTranslate
           }
         } catch (error) {
           console.error('Translation error:', error)
           // 出错时回退到拼音
           try {
-            return pinyin(chineseText, {
+            // 根据配置决定是否去除数字
+            let fallbackText = chineseText
+            if (config && config.removeNumbers) {
+              fallbackText = removeNumbersFromText(chineseText)
+              if (!fallbackText.trim()) {
+                fallbackText = chineseText
+              }
+            }
+
+            return pinyin(fallbackText, {
               style: pinyin.STYLE_NORMAL,
               heteronym: false,
               segment: true
@@ -389,24 +418,32 @@ export default class IPCs {
             // Ensure the directory exists
             await fs.ensureDir(path.dirname(operation.newPath))
 
-            // Check if target file already exists
-            if (await fs.pathExists(operation.newPath)) {
-              results.push({
-                success: false,
-                oldPath: operation.oldPath,
-                newPath: operation.newPath,
-                error: 'Target file already exists'
-              })
-              continue
+            let finalNewPath = operation.newPath
+
+            // Check if target file already exists and find available name
+            if (await fs.pathExists(finalNewPath)) {
+              const dir = path.dirname(finalNewPath)
+              const ext = path.extname(finalNewPath)
+              const nameWithoutExt = path.basename(finalNewPath, ext)
+
+              let counter = 1
+              do {
+                finalNewPath = path.join(
+                  dir,
+                  `${nameWithoutExt}_${counter}${ext}`
+                )
+                counter++
+              } while (await fs.pathExists(finalNewPath))
             }
 
             // Rename the file
-            await fs.move(operation.oldPath, operation.newPath)
+            await fs.move(operation.oldPath, finalNewPath)
 
             results.push({
               success: true,
               oldPath: operation.oldPath,
-              newPath: operation.newPath
+              newPath: finalNewPath,
+              actualName: path.basename(finalNewPath)
             })
           } catch (error) {
             results.push({
@@ -437,6 +474,7 @@ export default class IPCs {
         }
         return {
           mode: 'pinyin', // 'pinyin', 'dictionary', 'baidu', 'youdao'
+          removeNumbers: false, // 是否去除文件名中的数字
           baiduConfig: {
             appId: '',
             secretKey: ''
@@ -450,6 +488,7 @@ export default class IPCs {
         console.error('Error reading translation config:', error)
         return {
           mode: 'pinyin',
+          removeNumbers: false,
           baiduConfig: { appId: '', secretKey: '' },
           youdaoConfig: { appKey: '', appSecret: '' }
         }

@@ -24,8 +24,7 @@
   },
   "settings": {
     "title": "Settings",
-    "naming-rule": "Naming Convention",
-    "auto-create-folders": "Auto Create Category Folders"
+    "naming-rule": "Naming Convention"
   },
   "naming": {
     "camelCase": "Camel Case (camelCase)",

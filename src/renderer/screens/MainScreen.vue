@@ -52,6 +52,7 @@ interface RenameResult {
   success: boolean
   oldPath: string
   newPath: string
+  actualName?: string
   error?: string
 }
 
@@ -69,12 +70,12 @@ const errorMessage = ref('')
 
 // 设置
 const namingConvention = ref('camelCase')
-const autoCreateFolders = ref(true)
 
 // 翻译设置
 const translationMode = ref('pinyin') // 'pinyin', 'dictionary', 'baidu', 'youdao'
 const translationConfig = ref({
   mode: 'pinyin',
+  removeNumbers: false,
   baiduConfig: {
     appId: '',
     secretKey: ''
@@ -140,6 +141,7 @@ const saveTranslationConfiguration = async (): Promise<void> => {
   try {
     const configToSave = {
       mode: translationMode.value,
+      removeNumbers: translationConfig.value.removeNumbers,
       baiduConfig: {
         appId: translationConfig.value.baiduConfig.appId,
         secretKey: translationConfig.value.baiduConfig.secretKey
@@ -235,6 +237,7 @@ const generatePreview = async (): Promise<void> => {
           // 使用在线翻译API - 创建纯对象避免序列化问题
           const configToSend = {
             mode: translationMode.value,
+            removeNumbers: translationConfig.value.removeNumbers,
             baiduConfig: {
               appId: translationConfig.value.baiduConfig.appId,
               secretKey: translationConfig.value.baiduConfig.secretKey
@@ -251,10 +254,16 @@ const generatePreview = async (): Promise<void> => {
             configToSend
           )
         } else {
-          // 使用本地翻译（拼音或词典）
+          // 使用本地翻译（拼音或词典）- 也需要传递配置以支持去除数字
+          const configToSend = {
+            mode: translationMode.value,
+            removeNumbers: translationConfig.value.removeNumbers
+          }
+
           translatedName = await translateToEnglish(
             fileNameWithoutExt,
-            translationMode.value
+            translationMode.value,
+            configToSend
           )
         }
       } catch (error) {
@@ -308,9 +317,15 @@ const executeRename = async (): Promise<void> => {
     let errorCount = 0
     const errorDetails: string[] = []
 
+    const renamedFiles: string[] = []
+
     results.forEach((result) => {
       if (result.success) {
         successCount++
+        // 记录实际重命名的文件名
+        if (result.actualName) {
+          renamedFiles.push(result.actualName)
+        }
       } else {
         errorCount++
         errorDetails.push(`${result.oldPath}: ${result.error || '未知错误'}`)
@@ -326,7 +341,17 @@ const executeRename = async (): Promise<void> => {
     // 显示结果提示
     if (errorCount === 0) {
       // 全部成功
-      resultMessage.value = `重命名完成！成功处理了 ${successCount} 个文件。`
+      let message = `重命名完成！成功处理了 ${successCount} 个文件。`
+
+      // 检查是否有文件因重名而自动重命名
+      const autoRenamedCount = renamedFiles.filter((name) =>
+        /_\d+\./.test(name)
+      ).length
+      if (autoRenamedCount > 0) {
+        message += `\n其中 ${autoRenamedCount} 个文件因重名自动添加了序号。`
+      }
+
+      resultMessage.value = message
       showSuccessDialog.value = true
     } else if (successCount === 0) {
       // 全部失败
@@ -431,17 +456,7 @@ const hasPreview = computed(() => renamePreview.value.length > 0)
               @update:model-value="refreshPreview"
             />
           </v-col>
-          <v-col
-            cols="12"
-            md="4"
-          >
-            <v-switch
-              v-model="autoCreateFolders"
-              :label="t('settings.auto-create-folders')"
-              color="primary"
-              inset
-            />
-          </v-col>
+
           <v-col
             cols="12"
             md="4"
@@ -500,13 +515,28 @@ const hasPreview = computed(() => renamePreview.value.length > 0)
             cols="12"
             md="6"
           >
+            <v-switch
+              v-model="translationConfig.removeNumbers"
+              :label="t('translation.config.removeNumbers.label')"
+              color="primary"
+              inset
+              :hint="t('translation.config.removeNumbers.hint')"
+              persistent-hint
+              @update:model-value="refreshPreview"
+            />
+          </v-col>
+        </v-row>
+
+        <!-- API配置按钮行 -->
+        <v-row
+          class="mt-2"
+          v-if="translationMode === 'baidu' || translationMode === 'youdao'"
+        >
+          <v-col cols="12">
             <v-btn
               color="primary"
               variant="outlined"
               @click="openTranslationConfigDialog"
-              :disabled="
-                translationMode === 'pinyin' || translationMode === 'dictionary'
-              "
               class="mt-2"
             >
               <v-icon
