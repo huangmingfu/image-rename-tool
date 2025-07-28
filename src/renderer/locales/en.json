@@ -17,5 +17,41 @@
     "documentation": "Documentation",
     "github": "Source Code",
     "open-file": "Open a text file"
+  },
+  "app": {
+    "title": "Image Rename Tool",
+    "description": "Automatically convert Chinese filenames to English with multiple naming conventions and auto-categorization"
+  },
+  "settings": {
+    "title": "Settings",
+    "naming-rule": "Naming Convention",
+    "auto-create-folders": "Auto Create Category Folders"
+  },
+  "naming": {
+    "camelCase": "Camel Case (camelCase)",
+    "PascalCase": "Pascal Case (PascalCase)",
+    "snake_case": "Snake Case (snake_case)",
+    "kebab-case": "Kebab Case (kebab-case)",
+    "lowercase": "Lowercase (lowercase)"
+  },
+  "operation": {
+    "title": "Operations",
+    "select-folder": "Select Image Folder",
+    "refresh-preview": "Refresh Preview",
+    "start-rename": "Start Renaming",
+    "selected-folder": "Selected Folder",
+    "found-images": "Found {count} images"
+  },
+  "preview": {
+    "title": "Rename Preview",
+    "count": "{count} files",
+    "original-name": "Original Name",
+    "translated-name": "Translated Name",
+    "new-name": "New Name",
+    "file-size": "File Size"
+  },
+  "empty": {
+    "title": "Select Image Folder to Start",
+    "description": "Please select a folder containing images, the tool will automatically scan and generate rename preview"
   }
 }

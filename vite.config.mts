@@ -92,6 +92,9 @@ export default defineConfig(({ mode }) => {
     root: resolve('./src/renderer'),
     publicDir: resolve('./src/public'),
     clearScreen: false,
+    server: {
+      port: 5173
+    },
     build: {
       sourcemap: isDevEnv,
       minify: !isDevEnv,

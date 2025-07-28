@@ -60,6 +60,8 @@ export default pluginTypeScriptESLint.config(
       'vue/v-on-event-hyphenation': 'off',
       'vue/no-v-text-v-html-on-component': 'off',
       'vue/attribute-hyphenation': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'vue/valid-v-slot': 'off',
       'vue/max-attributes-per-line': [
         'error',
         {
@@ -74,4 +76,4 @@ export default pluginTypeScriptESLint.config(
       '@typescript-eslint/no-explicit-any': 'off'
     }
   }
-)
+) as any

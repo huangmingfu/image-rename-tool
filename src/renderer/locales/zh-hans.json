@@ -17,5 +17,41 @@
     "documentation": "文档",
     "github": "源代码",
     "open-file": "打开文本文件"
+  },
+  "app": {
+    "title": "图片重命名工具",
+    "description": "自动将中文文件名转换为英文，支持多种命名规则和自动分类"
+  },
+  "settings": {
+    "title": "设置",
+    "naming-rule": "命名规则",
+    "auto-create-folders": "自动创建分类文件夹"
+  },
+  "naming": {
+    "camelCase": "小驼峰 (camelCase)",
+    "PascalCase": "大驼峰 (PascalCase)",
+    "snake_case": "下划线 (snake_case)",
+    "kebab-case": "短横线 (kebab-case)",
+    "lowercase": "小写 (lowercase)"
+  },
+  "operation": {
+    "title": "操作",
+    "select-folder": "选择图片文件夹",
+    "refresh-preview": "刷新预览",
+    "start-rename": "开始重命名",
+    "selected-folder": "已选择文件夹",
+    "found-images": "找到 {count} 张图片"
+  },
+  "preview": {
+    "title": "重命名预览",
+    "count": "{count} 个文件",
+    "original-name": "原文件名",
+    "translated-name": "翻译结果",
+    "new-name": "新文件名",
+    "file-size": "文件大小"
+  },
+  "empty": {
+    "title": "选择图片文件夹开始",
+    "description": "请选择包含图片的文件夹，工具将自动扫描并生成重命名预览"
   }
 }

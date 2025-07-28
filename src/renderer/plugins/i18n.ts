@@ -13,14 +13,14 @@ import nl from '@/renderer/locales/nl.json'
 import { getCurrentLocale } from '@/renderer/utils'
 
 export default createI18n({
-  locale: getCurrentLocale(),
-  fallbackLocale: 'en',
+  locale: 'zh-hans',
+  fallbackLocale: 'zh-hans',
   globalInjection: true,
   messages: {
     en,
     ko,
-    zhHans,
-    zhHant,
+    'zh-hans': zhHans,
+    'zh-hant': zhHant,
     de,
     es,
     ja,
