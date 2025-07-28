@@ -10,6 +10,12 @@ on:
   # trigger deployment manually
   workflow_dispatch:
 
+# 设置 GITHUB_TOKEN 的权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build-documentation-pages:
     runs-on: ubuntu-latest
@@ -48,17 +54,20 @@ jobs:
       - name: Build VitePress site
         run: npm run build
 
-      # please check out the docs of the workflow for more details
-      # @see https://github.com/crazy-max/ghaction-github-pages
-      - name: Deploy to GitHub Pages
-        uses: crazy-max/ghaction-github-pages@v4
+      # 上传构建产物到 GitHub Pages
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          # deploy to gh-pages branch
-          target_branch: gh-pages
-          # deploy the default output dir of VitePress
-          build_dir: docs/dist
-          jekyll: false
-          fqdn: 'vutron.cdget.com'
-        env:
-          # @see https://docs.github.com/en/actions/reference/authentication-in-a-workflow#about-the-github_token-secret
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          path: docs/dist
+
+  # 部署到 GitHub Pages
+  deploy:
+    needs: build-documentation-pages
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

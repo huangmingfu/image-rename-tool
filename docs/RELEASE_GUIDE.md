@@ -95,7 +95,8 @@ pnpm run build:all
 
 ### 构建失败
 - 检查 Node.js 版本（需要 >= 20.0.0）
-- 清理依赖：`rm -rf node_modules && npm install`
+- 检查 pnpm 版本：`pnpm --version`
+- 清理依赖：`rm -rf node_modules && pnpm install`
 - 检查构建日志中的错误信息
 
 ### 上传失败
