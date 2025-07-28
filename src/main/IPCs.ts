@@ -64,20 +64,25 @@ async function translateWithYoudao(
     const signStr = appKey + text + salt + curtime + appSecret
     const sign = crypto.createHash('sha256').update(signStr).digest('hex')
 
+    const params = new URLSearchParams({
+      q: text,
+      from: 'zh-CHS',
+      to: 'en',
+      appKey: appKey,
+      salt: salt,
+      sign: sign,
+      signType: 'v3',
+      curtime: curtime
+    })
+
     const response = await axios.post(
       'https://openapi.youdao.com/api',
+      params,
       {
-        q: text,
-        from: 'zh-CHS',
-        to: 'en',
-        appKey: appKey,
-        salt: salt,
-        sign: sign,
-        signType: 'v3',
-        curtime: curtime
-      },
-      {
-        timeout: 5000
+        timeout: 5000,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
       }
     )
 
@@ -235,12 +240,17 @@ export default class IPCs {
 
             case 'baidu':
               // 百度翻译API
-              if (config && config.appId && config.secretKey) {
+              if (
+                config &&
+                config.baiduConfig &&
+                config.baiduConfig.appId &&
+                config.baiduConfig.secretKey
+              ) {
                 try {
                   return await translateWithBaidu(
                     chineseText,
-                    config.appId,
-                    config.secretKey
+                    config.baiduConfig.appId,
+                    config.baiduConfig.secretKey
                   )
                 } catch (error) {
                   console.error(
@@ -260,12 +270,17 @@ export default class IPCs {
 
             case 'youdao':
               // 有道翻译API
-              if (config && config.appKey && config.appSecret) {
+              if (
+                config &&
+                config.youdaoConfig &&
+                config.youdaoConfig.appKey &&
+                config.youdaoConfig.appSecret
+              ) {
                 try {
                   return await translateWithYoudao(
                     chineseText,
-                    config.appKey,
-                    config.appSecret
+                    config.youdaoConfig.appKey,
+                    config.youdaoConfig.appSecret
                   )
                 } catch (error) {
                   console.error(

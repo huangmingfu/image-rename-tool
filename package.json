@@ -1,10 +1,10 @@
 {
   "name": "image-rename-tool",
   "appId": "com.imagerenametool.app",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "图片重命名工具 - 自动将中文图片文件名转换为英文，支持多种命名规则和自动分类",
   "homepage": "https://github.com/your-repo/image-rename-tool",
-  "author": "Image Rename Tool Team",
+  "author": "huangmingfu",
   "license": "MIT",
   "main": "dist/main/index.js",
   "private": true,

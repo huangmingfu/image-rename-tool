@@ -232,11 +232,23 @@ const generatePreview = async (): Promise<void> => {
           translationMode.value === 'baidu' ||
           translationMode.value === 'youdao'
         ) {
-          // 使用在线翻译API
+          // 使用在线翻译API - 创建纯对象避免序列化问题
+          const configToSend = {
+            mode: translationMode.value,
+            baiduConfig: {
+              appId: translationConfig.value.baiduConfig.appId,
+              secretKey: translationConfig.value.baiduConfig.secretKey
+            },
+            youdaoConfig: {
+              appKey: translationConfig.value.youdaoConfig.appKey,
+              appSecret: translationConfig.value.youdaoConfig.appSecret
+            }
+          }
+
           translatedName = await translateToEnglish(
             fileNameWithoutExt,
             translationMode.value,
-            translationConfig.value
+            configToSend
           )
         } else {
           // 使用本地翻译（拼音或词典）
