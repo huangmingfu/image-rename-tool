@@ -26,20 +26,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build application (macOS)
         if: matrix.os == 'macos-latest'
-        run: npm run build:mac
+        run: pnpm run build:mac
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
       - name: Build application (Windows)
         if: matrix.os == 'windows-latest'
-        run: npm run build:win
+        run: pnpm run build:win
 
       - name: Upload artifacts (macOS)
         if: matrix.os == 'macos-latest'
@@ -85,20 +90,20 @@ jobs:
           name: ${{ steps.get_version.outputs.VERSION }} - 图片重命名工具
           body: |
             ## 🎉 图片重命名工具 ${{ steps.get_version.outputs.VERSION }}
-            
+
             ### 📦 下载安装包
             - **Windows 用户**: 下载 `.zip` 文件
             - **Mac 用户**: 下载对应架构的 `.dmg` 文件
               - Intel 芯片: `*_x64.dmg`
               - Apple Silicon (M1/M2): `*_arm64.dmg`
               - 通用版本: `*_universal.dmg`
-            
+
             ### 📋 安装说明
             - **Windows**: 解压 zip 文件后运行 exe 文件
             - **Mac**: 下载 dmg 文件，双击安装后从应用程序文件夹启动
-            
+
             ---
-            
+
             自动构建于 ${{ github.sha }}
           files: |
             macos-builds/**/*

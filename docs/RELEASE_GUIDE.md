@@ -8,13 +8,13 @@
 
 ```bash
 # 构建 Mac 版本
-npm run build:mac
+pnpm run build:mac
 
-# 构建 Windows 版本  
-npm run build:win
+# 构建 Windows 版本
+pnpm run build:win
 
 # 构建所有平台
-npm run build:all
+pnpm run build:all
 ```
 
 构建完成后，安装包会保存在 `release/{version}/` 目录中。
@@ -48,7 +48,7 @@ npm run build:all
    ```bash
    # macOS
    brew install gh
-   
+
    # Windows
    winget install --id GitHub.cli
    ```
