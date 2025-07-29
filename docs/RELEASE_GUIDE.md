@@ -45,6 +45,7 @@ pnpm run build:all
 ### 方法二：使用脚本发布
 
 1. **安装 GitHub CLI**
+
    ```bash
    # macOS
    brew install gh
@@ -54,6 +55,7 @@ pnpm run build:all
    ```
 
 2. **登录 GitHub**
+
    ```bash
    gh auth login
    ```
@@ -69,6 +71,7 @@ pnpm run build:all
 使用 GitHub Actions 实现自动构建和发布：
 
 1. **推送标签触发**
+
    ```bash
    git tag v1.2.0
    git push origin v1.2.0
@@ -94,17 +97,20 @@ pnpm run build:all
 ## 🔧 故障排除
 
 ### 构建失败
+
 - 检查 Node.js 版本（需要 >= 20.0.0）
 - 检查 pnpm 版本：`pnpm --version`
 - 清理依赖：`rm -rf node_modules && pnpm install`
 - 检查构建日志中的错误信息
 
 ### 上传失败
+
 - 确认文件大小不超过 GitHub 限制（2GB）
 - 检查网络连接
 - 确认 GitHub 权限设置
 
 ### 自动化发布失败
+
 - 检查 GitHub Actions 权限
 - 确认 GITHUB_TOKEN 可用
 - 查看 Actions 日志中的详细错误

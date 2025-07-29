@@ -54,6 +54,7 @@
    - `actions/deploy-pages@v4` - 部署到 Pages
 
 2. **正确的权限配置**
+
    ```yaml
    permissions:
      contents: read
@@ -79,6 +80,7 @@
 **原因**: 使用了错误的 token 配置或权限不足
 
 **解决方案**:
+
 1. 确保使用 `secrets.GITHUB_TOKEN` 而不是自定义 token
 2. 检查 Actions 权限设置
 3. 确保工作流有正确的 permissions 配置
@@ -88,6 +90,7 @@
 **原因**: GitHub Actions 权限不足
 
 **解决方案**:
+
 1. 在仓库设置中启用 "Read and write permissions"
 2. 确保 Pages 源设置为 "GitHub Actions"
 
@@ -96,6 +99,7 @@
 **原因**: Pages 配置问题
 
 **解决方案**:
+
 1. 检查 Pages 设置是否正确
 2. 确保构建输出目录正确（`docs/dist`）
 3. 检查构建是否成功完成
